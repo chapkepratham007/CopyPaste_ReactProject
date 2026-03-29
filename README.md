@@ -1,7 +1,7 @@
 # COPYPASTE_APP
 
 Password-protected internet clipboard (text + files) with expiring links.
-
+Deployed on link :https://copypaste-reactproject.onrender.com/
 ## Features
 
 - URL-based clips: open `http://localhost:5173/abc` on multiple devices
