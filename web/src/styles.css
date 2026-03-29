@@ -377,3 +377,88 @@ hr {
   background: rgba(34, 197, 94, 0.15);
   color: #22c55e;
 }
+
+/* Mobile responsiveness fixes */
+@media (max-width: 640px) {
+  .container {
+    padding: 8px;
+  }
+  
+  .card {
+    padding: 12px;
+    border-radius: 10px;
+  }
+  
+  .hstack {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  
+  .hstack .spacer {
+    display: none;
+  }
+  
+  .badge {
+    font-size: 11px;
+    padding: 4px 8px;
+  }
+  
+  .title {
+    font-size: 16px;
+  }
+  
+  .button {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+  
+  .info-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  
+  .list {
+    max-height: 150px;
+  }
+  
+  .fileItem {
+    padding: 8px 10px;
+  }
+  
+  .fileItem button {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+  
+  .toolbar {
+    padding: 8px 0;
+    flex-wrap: wrap;
+  }
+  
+  .row {
+    grid-template-columns: 1fr;
+  }
+  
+  .row.three {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Extra small screens */
+@media (max-width: 380px) {
+  .container {
+    padding: 6px;
+  }
+  
+  .card {
+    padding: 10px;
+  }
+  
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .badge {
+    white-space: normal;
+    text-align: center;
+  }
+}
