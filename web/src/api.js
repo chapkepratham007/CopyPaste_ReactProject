@@ -1,6 +1,11 @@
 // Use relative URL in production, absolute in development
 const isDev = import.meta.env.DEV;
-const API_BASE = import.meta.env.VITE_API_BASE || (isDev ? "http://localhost:8787" : "");
+const rawApiBase = import.meta.env.VITE_API_BASE || (isDev ? "http://localhost:8787" : "");
+
+// Construct full URL - if it's just a hostname (no protocol), prepend https://
+const API_BASE = rawApiBase && !rawApiBase.startsWith("http://") && !rawApiBase.startsWith("https://")
+  ? "https://" + rawApiBase
+  : rawApiBase;
 
 async function readJson(res) {
   const text = await res.text();

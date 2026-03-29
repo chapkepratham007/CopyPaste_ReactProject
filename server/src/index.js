@@ -14,7 +14,13 @@ import { ensureDirnameSafeId, nowMs, randomId } from "./util.js";
 const PORT = Number(process.env.PORT || 8787);
 const DB_PATH = process.env.DB_PATH || path.join(process.cwd(), "data", "db.sqlite");
 const UPLOAD_DIR = process.env.UPLOAD_DIR || path.join(process.cwd(), "data", "uploads");
-const CORS_ORIGIN = process.env.CORS_ORIGIN || "http://localhost:5173";
+
+// Construct CORS origin - if it's just a hostname (no protocol), prepend https://
+let corsOrigin = process.env.CORS_ORIGIN || "http://localhost:5173";
+if (corsOrigin && !corsOrigin.startsWith("http://") && !corsOrigin.startsWith("https://")) {
+  corsOrigin = "https://" + corsOrigin;
+}
+const CORS_ORIGIN = corsOrigin;
 
 fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
 fs.mkdirSync(UPLOAD_DIR, { recursive: true });

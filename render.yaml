@@ -20,7 +20,7 @@ services:
         fromService:
           type: web
           name: copypaste-web
-          property: url
+          property: host
       - key: RATE_LIMIT_WINDOW_MS
         value: 900000
       - key: RATE_LIMIT_MAX_REQUESTS
@@ -34,7 +34,6 @@ services:
   - type: web
     name: copypaste-web
     runtime: static
-    region: ohio
     buildCommand: cd web && npm ci && npm run build
     staticPublishPath: web/dist
     envVars:
@@ -42,4 +41,4 @@ services:
         fromService:
           type: web
           name: copypaste-api
-          property: url
+          property: host
