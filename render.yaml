@@ -44,3 +44,7 @@ services:
           type: web
           name: copypaste-api
           property: host
+    redirects:
+      - source: /**
+        destination: /index.html
+        type: rewrite
