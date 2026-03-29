@@ -1,0 +1,45 @@
+services:
+  # Backend API service
+  - type: web
+    name: copypaste-api
+    runtime: node
+    region: ohio
+    plan: standard
+    buildCommand: cd server && npm ci
+    startCommand: cd server && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: DB_PATH
+        value: /opt/render/project/.data/db.sqlite
+      - key: UPLOAD_DIR
+        value: /opt/render/project/.data/uploads
+      - key: CORS_ORIGIN
+        fromService:
+          type: web
+          name: copypaste-web
+          property: url
+      - key: RATE_LIMIT_WINDOW_MS
+        value: 900000
+      - key: RATE_LIMIT_MAX_REQUESTS
+        value: 100
+    disk:
+      name: copypaste-data
+      mountPath: /opt/render/project/.data
+      sizeGB: 10
+
+  # Frontend static site
+  - type: web
+    name: copypaste-web
+    runtime: static
+    region: ohio
+    buildCommand: cd web && npm ci && npm run build
+    staticPublishPath: web/dist
+    envVars:
+      - key: VITE_API_BASE
+        fromService:
+          type: web
+          name: copypaste-api
+          property: url
