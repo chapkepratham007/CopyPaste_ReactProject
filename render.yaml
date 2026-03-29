@@ -5,8 +5,9 @@ services:
     runtime: node
     region: ohio
     plan: standard
-    buildCommand: cd server && npm ci
-    startCommand: cd server && npm start
+    rootDir: server
+    buildCommand: npm ci
+    startCommand: npm start
     envVars:
       - key: NODE_ENV
         value: production
@@ -34,8 +35,9 @@ services:
   - type: web
     name: copypaste-web
     runtime: static
-    buildCommand: cd web && npm ci && npm run build
-    staticPublishPath: web/dist
+    rootDir: web
+    buildCommand: npm ci && npm run build
+    staticPublishPath: dist
     envVars:
       - key: VITE_API_BASE
         fromService:
