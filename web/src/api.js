@@ -1,11 +1,16 @@
-// Use relative URL in production, absolute in development
+// In production, always use full URL. In dev, use localhost or env var.
 const isDev = import.meta.env.DEV;
-const rawApiBase = import.meta.env.VITE_API_BASE || (isDev ? "http://localhost:8787" : "");
+const rawApiBase = import.meta.env.VITE_API_BASE;
 
-// Construct full URL - if it's just a hostname (no protocol), prepend https://
-const API_BASE = rawApiBase && !rawApiBase.startsWith("http://") && !rawApiBase.startsWith("https://")
-  ? "https://" + rawApiBase
-  : rawApiBase;
+let API_BASE;
+if (isDev) {
+  API_BASE = rawApiBase || "http://localhost:8787";
+} else {
+  // Production: must have full URL, construct https:// if needed
+  API_BASE = rawApiBase && rawApiBase.trim()
+    ? (rawApiBase.startsWith("http") ? rawApiBase : `https://${rawApiBase}`)
+    : ""; // Will fail if not set - forces proper config
+}
 
 async function readJson(res) {
   const text = await res.text();
