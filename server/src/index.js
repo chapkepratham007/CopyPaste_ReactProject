@@ -328,14 +328,20 @@ app.get("/api/clips/:clipId/files/:fileId", async (req, res, next) => {
 async function cleanupExpired() {
   const t = nowMs();
   const expired = await db.all("SELECT id FROM clips WHERE expires_at IS NOT NULL AND expires_at <= ?", t);
-  for (const c of expired) {
-    await deleteClipAndFiles(c.id);
+  if (expired.length > 0) {
+    console.log(`[cleanup] Removing ${expired.length} expired clip(s)`);
+    for (const c of expired) {
+      await deleteClipAndFiles(c.id);
+      console.log(`[cleanup] Deleted expired clip: ${c.id}`);
+    }
   }
 }
 
 setInterval(() => {
-  cleanupExpired().catch(() => {});
+  cleanupExpired().catch((e) => console.error("[cleanup] Error:", e));
 }, 60_000);
+
+console.log("[cleanup] Expiry cleanup job started (runs every 60s)");
 
 app.use((err, req, res, next) => {
   const status = err.status || 500;

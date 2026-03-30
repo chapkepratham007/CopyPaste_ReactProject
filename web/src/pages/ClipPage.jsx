@@ -74,7 +74,7 @@ export default function ClipPage() {
   const [mode, setMode] = useState("read");
   const [password, setPassword] = useState("");
   const [text, setText] = useState("");
-  const [destroyOnRead, setDestroyOnRead] = useState(true);
+  const [destroyOnRead, setDestroyOnRead] = useState(false);
   const [expirySeconds, setExpirySeconds] = useState(EXPIRY_OPTIONS[0].seconds);
 
   const [meta, setMeta] = useState(null);
@@ -181,9 +181,14 @@ export default function ClipPage() {
           files: selectedFiles,
           onProgress: hasLargeFiles ? setUploadProgress : undefined
         });
-        setSelectedFiles([]);
-        setTouched({ password: true, text: false, files: false });
       }
+
+      // After successful save, switch to read mode and clear form
+      setMode("read");
+      setText("");
+      setSelectedFiles([]);
+      setDestroyOnRead(false);
+      setTouched({ password: false, text: false, files: false });
 
       const m = await fetchMeta(safeClipId);
       setMeta(m);
