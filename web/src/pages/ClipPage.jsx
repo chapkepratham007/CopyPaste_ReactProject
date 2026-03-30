@@ -74,7 +74,7 @@ export default function ClipPage() {
   const [mode, setMode] = useState("read");
   const [password, setPassword] = useState("");
   const [text, setText] = useState("");
-  const [destroyOnRead, setDestroyOnRead] = useState(false);
+  const [destroyOnRead, setDestroyOnRead] = useState(true);
   const [expirySeconds, setExpirySeconds] = useState(EXPIRY_OPTIONS[0].seconds);
 
   const [meta, setMeta] = useState(null);
