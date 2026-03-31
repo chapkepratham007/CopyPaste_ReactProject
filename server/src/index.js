@@ -29,6 +29,9 @@ const db = await openDb({ filename: DB_PATH });
 
 const app = express();
 
+// Trust proxy (needed for Render and rate limiting)
+app.set('trust proxy', 1);
+
 // Security middleware
 app.use(helmet({
   contentSecurityPolicy: {
@@ -332,9 +335,9 @@ async function cleanupExpired() {
   const timeSinceLastCleanup = t - lastCleanupTime;
   
   // If more than 10 minutes passed since last cleanup, server likely slept
-  // Don't delete clips immediately - log for debugging
   if (timeSinceLastCleanup > 10 * 60 * 1000) {
     console.log(`[CLEANUP] Server woke up after ${Math.round(timeSinceLastCleanup / 60000)} minutes`);
+    console.log(`[CLEANUP] Current server time: ${new Date(t).toISOString()}`);
   }
   
   lastCleanupTime = t;
@@ -342,9 +345,10 @@ async function cleanupExpired() {
   const expired = await db.all("SELECT id, expires_at FROM clips WHERE expires_at IS NOT NULL AND expires_at <= ?", t);
   
   if (expired.length > 0) {
-    console.log(`[CLEANUP] Found ${expired.length} expired clips to delete`);
+    console.log(`[CLEANUP] Found ${expired.length} expired clips (current time: ${new Date(t).toISOString()})`);
     for (const c of expired) {
-      console.log(`[CLEANUP] Deleting clip ${c.id} (expired at ${new Date(c.expires_at).toISOString()})`);
+      const expiredAgo = Math.round((t - c.expires_at) / 1000);
+      console.log(`[CLEANUP] Deleting clip "${c.id}" - expired ${expiredAgo}s ago at ${new Date(c.expires_at).toISOString()}`);
       await deleteClipAndFiles(c.id);
     }
   }
