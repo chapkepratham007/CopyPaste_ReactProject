@@ -144,6 +144,14 @@ app.get("/api/clips/:clipId/meta", async (req, res, next) => {
     if (!ensureDirnameSafeId(clipId)) return res.status(400).json({ error: "Invalid clip id" });
 
     const clip = await loadClipOr404(clipId);
+    const t = nowMs();
+    
+    // Log expiry check details
+    if (clip.expires_at) {
+      const timeLeft = clip.expires_at - t;
+      console.log(`[META] Checking "${clipId}" - expires_at: ${new Date(clip.expires_at).toISOString()}, now: ${new Date(t).toISOString()}, timeLeft: ${Math.round(timeLeft/1000)}s`);
+    }
+    
     assertNotExpired(clip);
 
     const files = await db.all(
@@ -180,12 +188,14 @@ app.put("/api/clips/:clipId", async (req, res, next) => {
 
     if (!existing) {
       const passwordHash = await bcrypt.hash(password, 10);
+      const expiresAt = computeExpiresAt(expiresInSeconds);
+      console.log(`[CLIP] Creating "${clipId}" - expires in ${expiresInSeconds}s at ${new Date(expiresAt).toISOString()} (server time: ${new Date(t).toISOString()})`);
       await db.run(
         "INSERT INTO clips (id, password_hash, text, expires_at, destroy_on_read, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
         clipId,
         passwordHash,
         text ?? "",
-        computeExpiresAt(expiresInSeconds),
+        expiresAt,
         destroyOnRead ? 1 : 0,
         t,
         t
