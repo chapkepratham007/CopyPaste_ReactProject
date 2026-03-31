@@ -325,23 +325,37 @@ app.get("/api/clips/:clipId/files/:fileId", async (req, res, next) => {
   }
 });
 
+let lastCleanupTime = nowMs();
+
 async function cleanupExpired() {
   const t = nowMs();
-  const expired = await db.all("SELECT id FROM clips WHERE expires_at IS NOT NULL AND expires_at <= ?", t);
+  const timeSinceLastCleanup = t - lastCleanupTime;
+  
+  // If more than 10 minutes passed since last cleanup, server likely slept
+  // Don't delete clips immediately - log for debugging
+  if (timeSinceLastCleanup > 10 * 60 * 1000) {
+    console.log(`[CLEANUP] Server woke up after ${Math.round(timeSinceLastCleanup / 60000)} minutes`);
+  }
+  
+  lastCleanupTime = t;
+  
+  const expired = await db.all("SELECT id, expires_at FROM clips WHERE expires_at IS NOT NULL AND expires_at <= ?", t);
+  
   if (expired.length > 0) {
-    console.log(`[cleanup] Removing ${expired.length} expired clip(s)`);
+    console.log(`[CLEANUP] Found ${expired.length} expired clips to delete`);
     for (const c of expired) {
+      console.log(`[CLEANUP] Deleting clip ${c.id} (expired at ${new Date(c.expires_at).toISOString()})`);
       await deleteClipAndFiles(c.id);
-      console.log(`[cleanup] Deleted expired clip: ${c.id}`);
     }
   }
 }
 
-setInterval(() => {
-  cleanupExpired().catch((e) => console.error("[cleanup] Error:", e));
-}, 60_000);
+// Run cleanup immediately on startup, then every minute
+cleanupExpired().catch((e) => console.error("[CLEANUP] Initial cleanup failed:", e));
 
-console.log("[cleanup] Expiry cleanup job started (runs every 60s)");
+setInterval(() => {
+  cleanupExpired().catch((e) => console.error("[CLEANUP] Interval cleanup failed:", e));
+}, 60_000);
 
 app.use((err, req, res, next) => {
   const status = err.status || 500;
