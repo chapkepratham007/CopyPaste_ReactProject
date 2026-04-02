@@ -339,15 +339,35 @@ app.get("/api/clips/:clipId/files/:fileId", async (req, res, next) => {
 });
 
 let lastCleanupTime = nowMs();
+let serverJustWokeUp = false;
+let wakeUpTime = nowMs();
 
 async function cleanupExpired() {
   const t = nowMs();
   const timeSinceLastCleanup = t - lastCleanupTime;
   
-  // If more than 10 minutes passed since last cleanup, server likely slept
-  if (timeSinceLastCleanup > 10 * 60 * 1000) {
+  // If more than 15 minutes passed since last cleanup, server likely slept
+  const SERVER_SLEEP_THRESHOLD = 15 * 60 * 1000; // 15 minutes
+  const GRACE_PERIOD_AFTER_WAKE = 60 * 60 * 1000; // 60 minutes (1 hour) grace period
+  
+  if (timeSinceLastCleanup > SERVER_SLEEP_THRESHOLD) {
     console.log(`[CLEANUP] Server woke up after ${Math.round(timeSinceLastCleanup / 60000)} minutes`);
     console.log(`[CLEANUP] Current server time: ${new Date(t).toISOString()}`);
+    serverJustWokeUp = true;
+    wakeUpTime = t;
+  }
+  
+  // If server just woke up, skip cleanup for grace period to allow users to access clips
+  if (serverJustWokeUp && (t - wakeUpTime) < GRACE_PERIOD_AFTER_WAKE) {
+    console.log(`[CLEANUP] Skipping cleanup - in grace period after wake (${Math.round((t - wakeUpTime) / 60000)} min / ${GRACE_PERIOD_AFTER_WAKE / 60000} min)`);
+    lastCleanupTime = t;
+    return;
+  }
+  
+  // Grace period over, resume normal cleanup
+  if (serverJustWokeUp && (t - wakeUpTime) >= GRACE_PERIOD_AFTER_WAKE) {
+    console.log(`[CLEANUP] Grace period over, resuming normal cleanup`);
+    serverJustWokeUp = false;
   }
   
   lastCleanupTime = t;

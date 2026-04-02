@@ -5,13 +5,12 @@ import { fetchMeta, fileDownloadUrl, readClip, saveClip, uploadFiles } from "../
 const EXPIRY_OPTIONS = [
   { label: "1 min", seconds: 1 * 60 },
   { label: "5 min", seconds: 5 * 60 },
-  { label: "1 hour", seconds: 60 * 60 },
-  { label: "2 hours", seconds: 2 * 60 * 60 },
-  { label: "6 hours", seconds: 6 * 60 * 60 },
-  { label: "1 day", seconds: 24 * 60 * 60 },
-  { label: "7 days", seconds: 7 * 24 * 60 * 60 },
-  { label: "330 days", seconds: 330 * 24 * 60 * 60 },
-  { label: "Forever", seconds: null },
+  { label: "15 min", seconds: 15 * 60 },
+  { label: "30 min", seconds: 30 * 60 },
+  { label: "1 hr", seconds: 60 * 60 },
+  { label: "2 hr", seconds: 2 * 60 * 60 },
+  { label: "3 hr", seconds: 3 * 60 * 60 },
+  { label: "4 hr", seconds: 4 * 60 * 60 },
 ];
 
 const MAX_TEXT_LENGTH = 2_000_000;
@@ -74,7 +73,7 @@ export default function ClipPage() {
   const [mode, setMode] = useState("read");
   const [password, setPassword] = useState("");
   const [text, setText] = useState("");
-  const [destroyOnRead, setDestroyOnRead] = useState(false);
+  const [destroyOnRead, setDestroyOnRead] = useState(true);
   const [expirySeconds, setExpirySeconds] = useState(EXPIRY_OPTIONS[0].seconds);
 
   const [meta, setMeta] = useState(null);
@@ -181,14 +180,9 @@ export default function ClipPage() {
           files: selectedFiles,
           onProgress: hasLargeFiles ? setUploadProgress : undefined
         });
+        setSelectedFiles([]);
+        setTouched({ password: true, text: false, files: false });
       }
-
-      // After successful save, switch to read mode and clear form
-      setMode("read");
-      setText("");
-      setSelectedFiles([]);
-      setDestroyOnRead(false);
-      setTouched({ password: false, text: false, files: false });
 
       const m = await fetchMeta(safeClipId);
       setMeta(m);
