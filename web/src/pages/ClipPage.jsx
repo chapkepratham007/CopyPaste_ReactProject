@@ -409,6 +409,7 @@ function WriteMode({
             className={`input ${filesError ? "error" : ""}`}
             type="file"
             multiple
+            accept="*/*"
             onChange={(e) => onFilesChange(Array.from(e.target.files || []))}
             disabled={busy}
           />
